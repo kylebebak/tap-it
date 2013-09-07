@@ -2,7 +2,6 @@ package com.bebak.kyle.tapit;
 
 import processing.core.PImage;
 
-import com.bebak.kyle.tapit.TapIt.Slider;
 
 public class Splash {
 
@@ -60,10 +59,10 @@ public class Splash {
     inPlay = false;
     inScores = false; 
 
-    spc = sketch.new Slider(TapIt.round(.25f * sketch.width), TapIt.round(.5f * sketch.height), TapIt.round(.25f * sketch.width), TapIt.round(.11f * sketch.height), 
+    spc = new Slider(sketch, TapIt.round(.25f * sketch.width), TapIt.round(.5f * sketch.height), TapIt.round(.25f * sketch.width), TapIt.round(.11f * sketch.height), 
     symbolNumbers, TapIt.spcInitialIndex, "Images");
 
-    mode = sketch.new Slider(TapIt.round(.66f * sketch.width), TapIt.round(.5f * sketch.height), TapIt.round(.1f * sketch.height), TapIt.round(.13f * sketch.height), 
+    mode = new Slider(sketch, TapIt.round(.66f * sketch.width), TapIt.round(.5f * sketch.height), TapIt.round(.1f * sketch.height), TapIt.round(.13f * sketch.height), 
     modes, TapIt.modeInitialIndex, "");
   } 
 
