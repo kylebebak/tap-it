@@ -40,9 +40,9 @@ static String[] modes = {
 
 
 private static int spc; // default spc. symbols per card, 3 - 10 is allowed, with the exception of 7
-private static String mode;
+static String mode;
 
-private static int nSyms; // number of cards in deck, also number of unique symbols in deck
+static int nSyms; // number of cards in deck, also number of unique symbols in deck
 
 static PImage[] allImgs;
 private static String[] deckInfo;
@@ -72,18 +72,18 @@ private final int WAIT_TIME = 1000; // milliseconds of wait time before game sta
 private Intro intro; // this is displayed at first and then uninstantiated
 
 
-private static int extraPerCard; // increment player's time limit by this amount each time he gets a match
+static int extraPerCard; // increment player's time limit by this amount each time he gets a match
 private final int msPerSymbol = 3000; // allot this initial time for a player in survivor mode
 private final int extraPerCardPerSymbol = 500;
-private static final float extraTimeDecayOrder = .7f; // 1 is reciprocal decay as score increases, 2 is quadratic decay, etc
+static final float extraTimeDecayOrder = .7f; // 1 is reciprocal decay as score increases, 2 is quadratic decay, etc
 private static int timeLimit;
-private static final int PENALTY = 1000; // 1000 ms = 1 second, time penalty for an incorrect card
+static final int PENALTY = 1000; // 1000 ms = 1 second, time penalty for an incorrect card
 
 
 private static APMediaPlayer mPlayer; // for sound playback, must be released when the sketch is destroyed
 private static final String START = "sounds/start.ogg"; // relative paths to sound files passed to mPlayer
-private static final String CORRECT = "sounds/correct.ogg";
-private static final String WRONG = "sounds/wrong.ogg";
+static final String CORRECT = "sounds/correct.ogg";
+static final String WRONG = "sounds/wrong.ogg";
 
 
 private final String LOG = this.getClass().getSimpleName();
@@ -93,7 +93,7 @@ private final String LOG = this.getClass().getSimpleName();
  * when running on Android the path relative to the sketch folder must be used
  *******************************************/
 //private static String path = "/Users/kylebebak/Desktop/Dropbox/Programming/Processing/XX__WebAndMobileApps/Projects/Match it/Tap_It/data/";
-private static String path = new String();
+static String path = new String();
 
 
 
@@ -212,7 +212,7 @@ public void initializeGame() {
   /***************************************
    * Instantiate players with a card each from the top of the deck
    ****************************************/
-  p1 = new Player(px, py, deck.removeTop(), deck, timeLimit);
+  p1 = new Player(this, px, py, deck.removeTop(), deck, timeLimit);
 
 
   /***************************************
@@ -467,232 +467,6 @@ public void shuffleArray(PImage[] a)
 }
 
 
-
-public class Player {
-
-  /*********************************
-   The Player is responsible for displaying everything in the game, while the main class
-   is responsible for flow control. Player's Deck is simply a pointer to the deck
-   instantiated in the main routine, and player and deck position and dimensions are specified
-   in the main class
-   *********************************/
-
-  private Deck deck; // simply a pointer to the deck instantiated in the main class
-  private Card card;
-  private float x; // position of player's card
-  private float y;
-
-  private int score;
-  private boolean locked; // for rotating player's card
-  private Timer timer;
-  private int timeLimit;
-  private int fixedTime;
-  private boolean displayFixed; // for fixing display and ensuring committed score is identical to displayed score
-
-  private ArrayList<FadingText> ft; // fading text when player either wins or loses a point
-
-    private float r; // radius of circular card
-  private float textSize = .038f; // * width
-  private final float rotationSpeed = .00001f;
-  private final int textColor = Utils.color(255);
-  private final int correctTextColor = Utils.color(0, 255, 0);
-  private final int wrongTextColor = Utils.color(255, 0, 0);
-
-  private PImage back; // back arrow image
-  private float backX = 1.05f; // * r + x
-  private float backY = .75f; // * backDim
-  private float backDim = .08f; // * width
-
-  private float scoreX = .85f; // * r + x 
-  private float scoreY = .9f; // * r + y
-
-  private final int BG = Utils.color(50); // background color for board
-
-
-  // constructor
-  public Player(float x, float y, Card c, Deck d, int timeLimit) {
-
-    /********** Set dimensions of back arrow and score, relative to player card **********/
-    this.x = x;
-    this.y = y;
-    r = TapIt.cardRadius;
-    r *= width;
-
-    back = loadImage(TapIt.path + "images/back.png");
-    backDim *= width;
-    backX = backX * r + x;
-    backY *= backDim;
-    scoreX = scoreX * r + x;
-    scoreY = scoreY * r + y;
-
-    textSize *= width;
-
-
-    /********** Initialize timer, score, player card and deck **********/
-    this.initialize();
-    card = c;
-    card.changePosition(x, y);
-    deck = d;
-    ft = new ArrayList<FadingText>();
-
-    score = 0;
-    this.timeLimit = timeLimit;
-    timer = new Timer(TapIt.this, timeLimit);
-    timer.start();
-    displayFixed = false;
-  }
-
-
-  public void giveCard(Card c) {
-    c.changePosition(x, y);
-    card = c;
-  }
-
-  public void removeCard() {
-    card = null;
-  }
-
-  public void giveDeck(Deck d) {
-    deck = d;
-  }
-
-  public Card getCard() {
-    return card;
-  }
-
-  public void initialize() {
-    timer = new Timer(TapIt.this, timeLimit);
-    timer.start();
-    score = 0;
-  }
-
-  // has the player's time run out?
-  public boolean timeIsUp() {
-    return timer.timeIsUp();
-  }
-
-  public int getScore() {
-    return score;
-  }
-
-  public int timeElapsed() {
-    return timer.elapsedTime();
-  }
-
-  // for time trial mode, to ensure that committed time and final displayed time are the same 
-  public void fixAndDisplayTime(int time) {
-    fixedTime = time;
-    displayFixed = true;
-    displayAndUpdate();
-  }
-
-
-
-
-
-  // update card angle and display it, also display score and lives
-  public void displayAndUpdate() {
-    background(BG);
-    deck.displayDeck();
-    deck.displayTopFront();
-
-    // display back arrow
-    imageMode(CENTER);
-    image(back, backX, backY, backDim, backDim);
-
-    // display player card
-    card.updateTheta();
-    card.displayFront();
-    fill(textColor);
-    textSize(textSize);
-    text(score, scoreX, scoreY);
-
-    if (TapIt.mode.equals(TapIt.SURVIVOR))
-      text(timer.remainingTimeToStringMinutes(), scoreX, scoreY + textSize);
-
-    if (TapIt.mode.equals(TapIt.TIME_TRIAL) && !displayFixed)
-      text(timer.elapsedTimeToStringMinutes(), scoreX, scoreY + textSize);
-    if (TapIt.mode.equals(TapIt.TIME_TRIAL) && displayFixed)
-      text(timer.timeToStringMinutes(fixedTime), scoreX, scoreY + textSize);
-
-    // display fading text for incrementing score
-    for (int i = ft.size() - 1; i >=0; i--) {
-      FadingText f = ft.get(i);
-      if (f.isDead()) ft.remove(i);
-      f.displayAndUpdate();
-    }
-  }
-
-
-
-  // if player pushes mouse check to see what symbol in the deck
-  // they have clicked on and update their score appropriately
-  public void checkClick() {
-    if (dist(mouseX, mouseY, x, y) > r) 
-      locked = true; // lock out rotation
-
-    // in survivor mode, extraPerCard decreases as player gets more points, slowly approaching zero
-    float epcMultiplier = pow( (float) TapIt.nSyms, TapIt.extraTimeDecayOrder ) / 
-    pow( (float) max(TapIt.nSyms, score), TapIt.extraTimeDecayOrder );
-
-    int symbolIndex = deck.indexAtPosition(mouseX, mouseY);
-    if (symbolIndex == -1) 
-      return; // no symbol was clicked on
-
-
-    /*********** CORRECT CLICK ************/
-    if (card.hasSymbol(symbolIndex)) { 
-      score++;
-
-      if (TapIt.mode.equals(TapIt.SURVIVOR)) {
-        timer.addTime(round(TapIt.extraPerCard * epcMultiplier));
-        ft.add(new FadingText(TapIt.this, correctTextColor, "+" + nf(TapIt.extraPerCard * epcMultiplier / (float) 1000, 1, 1), 
-        x + random(-r, r), y + random(-r, r)));
-      }
-      if (TapIt.mode.equals(TapIt.TIME_TRIAL))
-        ft.add(new FadingText(TapIt.this, correctTextColor, "+1", x + random(-r, r), y + random(-r, r)));
-
-      this.giveCard(deck.removeTop()); // consume a card from the deck
-
-      TapIt.getPlayer().setMediaFile(TapIt.CORRECT); // play correct sound whenever player gets one right
-      TapIt.getPlayer().start();
-    } 
-
-    /*********** WRONG CLICK ************/
-    else {
-      if (TapIt.mode.equals(TapIt.SURVIVOR))
-        timer.subtractTime(TapIt.PENALTY);
-      if (TapIt.mode.equals(TapIt.TIME_TRIAL))
-        timer.addTimeCountUp(TapIt.PENALTY);
-
-      ft.add(new FadingText(TapIt.this, wrongTextColor, "-" + nf(TapIt.PENALTY / (float) 1000, 1, 1), 
-      x + random(-r, r), y + random(-r, r)));
-
-      TapIt.getPlayer().setMediaFile(TapIt.WRONG); // play wrong sound whenever player gets one wrong
-      TapIt.getPlayer().start();
-    }
-  }
-
-
-
-  // player is checking for a click within the back arrow
-  public boolean checkBack() {
-    // check if player clicked back button to return to splash screen, calls method form main Tap_It program
-    return dist(mouseX, mouseY, backX, backY) < backDim / 2.0f;
-  }
-
-  // this is called in main class whenever mouse is dragged
-  public void checkRotate() {
-    if (locked) 
-      return;
-    float alpha = (mouseX - x) * (mouseY - pmouseY) - (mouseY - y) * (mouseX - pmouseX);
-    card.incrementOmega(alpha * rotationSpeed);
-  }
-
-  public void checkRelease() {
-    locked = false;
-  }
-}
 
 public int sketchWidth() { return displayWidth; }
   public int sketchHeight() { return displayHeight; }  
