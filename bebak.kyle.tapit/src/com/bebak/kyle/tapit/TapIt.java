@@ -26,15 +26,15 @@ private static final String APPNAME = "TapIt";
 static String sdPath = null;
 
 
-private static final int spcInitialIndex = 1;
+static final int spcInitialIndex = 1;
 static Integer[] spcNumbers = { 
   3, 4, 5, 6, 8, 9, 10
 }; 
 
 public static String SURVIVOR = "Survivor"; // static constants for modes of play
 public static String TIME_TRIAL = "Time trial";
-private static final int modeInitialIndex = 0;
-private static String[] modes = {
+static final int modeInitialIndex = 0;
+static String[] modes = {
   TIME_TRIAL, SURVIVOR
 };
 
@@ -58,7 +58,7 @@ private Player p1;
 private float px = .235f; // player position, * width
 private float py = .48f; // * height
 private PFont font; // THIS IS THE ONLY FONT IN THE ENTIRE APPLICATION, IT DOESN'T CHANGE
-private static final float cardRadius = .22f; // * width, multiplication done in subclass constructors
+static final float cardRadius = .22f; // * width, multiplication done in subclass constructors
 
 
 private Splash splash; // this class manages the flow of the game, read more in its documentation
@@ -140,7 +140,7 @@ public void setup() {
   /***************************************s
    * Initialize game screens, games goes intro on setup
    ****************************************/
-  splash = new Splash();
+  splash = new Splash(this);
   // command center for the game, menu screen
 
   Scores scoresInitializer = new Scores(this); 
@@ -193,7 +193,7 @@ public void initializeGame() {
     for (int j = 0; j < spc; j++)
       cardIndices[j] = Integer.parseInt(symbols[j]);
 
-    cards.add(new Card(spc, cardIndices, 0, 0));
+    cards.add(new Card(this, spc, cardIndices, 0, 0));
     // it doesn't matter what the location of the added cards is
     // because addCard() changes the position of the card to the
     // current deck position
@@ -1068,307 +1068,7 @@ public class Slider<Item> {
     colorbutton = cbutton;
   }
 }
-public class Splash {
-
-  /************************************
-   This class is manages the flow of the game. It knows which state the game is in, and
-   in each call to draw() the main routine queries this class so it knows whether to display
-   and update the Player (i.e. the game), the Scores, or Splash. It has getters and setters
-   for booleans that flag which state the game is in. If inPlay and inScores must not both
-   be true at the same time. If neither is true, then the main routine displays and updates Splash
-   ************************************/
-
-  private boolean inWait;
-  private boolean inPlay;
-  private boolean inScores;
-  private Slider spc;
-  private Slider mode;
-
-  private PImage bgImg; // this background image
-  private final int BG = Utils.color(0); // background color in absence of background image
-
-  private float textSizeStart = .13f; // * height
-  private float textSizeScores = .055f; // * height
-
-  // coordinates for text on screen, coordinates for sliders ARE HARD-CODED BELOW IN CONSTRUCTOR
-  private float startX = .48f; // * width
-  private float startY = .22f; // * height
-  private float scoresX = .85f;
-  private float scoresY = .875f;
-  private int opaqueness = 200; // out of 255
-
-
-  private Integer[] symbolNumbers = TapIt.spcNumbers;
-  private String[] modes = TapIt.modes;
-
-  private int spcInt;
-  private String modeString;
-
-
-  // constrcutor, instantiates sliders and sets inScreen booleans to be false
-  public Splash() {
-    textSizeStart *= height;
-    textSizeScores *= height;
-
-    startX *= width;
-    startY *= height;
-    scoresX *= width;
-    scoresY *= height;
-
-    inWait = false;
-    inPlay = false;
-    inScores = false; 
-
-    spc = new Slider(round(.25f * width), round(.5f * height), round(.25f * width), round(.11f * height), 
-    symbolNumbers, TapIt.spcInitialIndex, "Images");
-
-    mode = new Slider(round(.66f * width), round(.5f * height), round(.1f * height), round(.13f * height), 
-    modes, TapIt.modeInitialIndex, "");
-  } 
-
-
-  // various getters and setters
-  public boolean inWait() {
-    return inWait;
-  }
-
-  public boolean inPlay() {
-    return inPlay;
-  }
-
-  public boolean inScores() {
-    return inScores;
-  }
-
-
-  public void setWaitStatus(boolean inWait) {
-    this.inWait = inWait;
-  }
-
-  public void setGameStatus(boolean inPlay) {
-    this.inPlay = inPlay;
-  }
-
-  public void setScoresStatus(boolean inScores) {
-    this.inScores = inScores;
-  }
-
-
-  // set the background of the splash screen
-  public void setBackground(PImage bgImg) {
-    this.bgImg = bgImg;
-  }
-
-  // get states of the various sliders that control game variables
-  public int spc() {
-    return spcInt;
-  }
-
-  public String mode() {
-    return modeString;
-  }
-
-
-
-  public void displayAndUpdate() {
-
-    if (bgImg == null)
-      background(BG);
-    else
-      background(bgImg);
-
-    rectMode(CORNER);
-    fill(0, opaqueness); // mostly background of previous game partially visible
-    rect(0, 0, width, height);
-
-    fill(255);
-
-    textAlign(CENTER, CENTER);
-    textSize(textSizeStart);
-    text("Start", startX, startY);
-    textSize(textSizeScores);
-    text("Scores", scoresX, scoresY);
-    textAlign(LEFT, BASELINE); // reset to default
-
-    spc.update();
-    mode.update();
-
-    spc.display();
-    mode.display();
-
-    spcInt = (Integer) spc.getValue();
-    modeString = (String) mode.getValue();
-  }
-
-
-
-  /* splash screen is checking for a click to initialize a new game (go to player screen)
-   or go to scores screen */
-  public int checkClick() {
-    if (inPlay || inScores || inWait) // return unless game is actually in splash screen
-      return -1;
-
-    if (dist(mouseX, mouseY, startX, startY) < 1.25f * textSizeStart) {
-      inWait = true;
-      return 0;
-    }
-
-    if (dist(mouseX, mouseY, scoresX, scoresY) < 1.25f * textSizeScores) {
-      inScores = true;
-      return 1;
-    }
-
-    return -1;
-  }
-}
-
 public int sketchWidth() { return displayWidth; }
-  public int sketchHeight() { return displayHeight; }
-  
-  
-  public class Card {
-
-	  private int nSyms; // number of symbols per card, less than total nSyms for deck
-	  private int[] symIndices; // index of each symbol
-	  // there are SPC + (SPC - 1) ^ 2 distinct symbols and distinct cards in the deck
-
-	  private float x; // center of card
-	  private float y;
-	  private float theta = 0; // rotation angle of card
-	  private float omega = 0; // angular velocity of card
-
-	  private float sr; // symbol radius
-	  private float[] sx; // symbol position relative to the center of the card
-	  private float[] sy;
-	  private float[] sa;
-
-
-	  private float r; // radius of circular card
-	  private float borderWidth = .055f; // * radius
-	  private final int front = Utils.color(210, 255, 210);
-	  private final int border = Utils.color(0, 255, 255);
-	  private final float radiusMultiplier = .9995f; 
-	  // make sr smaller if symbols don't fit on card
-	  private final float angleDrag = .12f;
-	  private final float displaySizeMultiplier = .975f;
-
-
-
-	  public Card(int nSyms, int[] symIndices, float x, float y) {
-	    r = TapIt.cardRadius; // making cardRadius final and static and initializing r here prevents a weird bug
-	    r *= width;
-	    borderWidth *= r;
-
-	    this.nSyms = nSyms;
-	    this.symIndices = symIndices;
-
-	    this.x = x;
-	    this.y = y;
-	    sr = 2.0f * r / sqrt(nSyms); // new symbol radius
-	    sx = new float[nSyms];
-	    sy = new float[nSyms];
-	    sa = new float[nSyms];
-	    // initialize positions for symbols
-	    int c = 0;
-	card:
-	    while (c < nSyms) {
-	      float rad = random(0, r - sr / 2.0f); 
-	      // if the divisor of sr is greater than 1, some symbols will be outside card boundary
-	      float ang = random(0, 2.0f * PI);
-	      float newx = rad * cos(ang);
-	      float newy = rad * sin(ang);
-
-	      for (int i = 0; i < c; i++) {
-	        if ( dist(sx[i], sy[i], newx, newy) < 2.0f * sr) {
-	          sr *= radiusMultiplier; 
-	          continue card;
-	        }
-	      } 
-	      sx[c] = newx;
-	      sy[c] = newy;
-	      sa[c] = random(0, 2 * PI);
-	      c++;
-	    }
-	  }
-
-
-
-
-	  public void displayFront() {
-	    imageMode(CENTER);
-	    pushMatrix();
-	    translate(x, y);
-	    rotate(theta);
-
-	    fill(border);
-	    ellipse(0, 0, 2 * r, 2 * r);
-	    fill(front);
-	    noStroke();
-	    ellipse(0, 0, 2 * (r - borderWidth), 2 * (r - borderWidth));
-	    stroke(0);
-
-	    for (int c = 0; c < nSyms; c++) {
-	      pushMatrix();
-	      translate(sx[c], sy[c]);
-	      rotate(sa[c]);
-	      image(TapIt.imageAtIndex(symIndices[c]), 0, 0, 
-	      displaySizeMultiplier * 2 * sr, displaySizeMultiplier * 2 * sr);
-	      popMatrix();
-	    }
-
-	    popMatrix();
-	  }
-
-	  public void displayBack() {
-	    // not implemented
-	  }
-
-
-
-
-	  public boolean hasSymbol(int symbolIndex) {
-	    for (int s : symIndices) 
-	      if (s == symbolIndex) 
-	        return true;
-	    return false;
-	  } 
-
-	  // return the index of symbol at the given x and y coordinates 
-	  // relative to the center of the card, or -1 if no symbol at these coordinates
-	  public int indexAtPosition(float x, float y) {
-	    for (int i = 0; i < nSyms; i++)
-	      if ( dist(x, y, sx[i], sy[i]) < sr ) return symIndices[i];
-	    return -1;
-	  }
-
-	  // change the location of the card on the canvas
-	  public void changePosition(float x, float y) {
-	    this.x = x;
-	    this.y = y;
-	  }
-
-	  // reset the rotation angle to zero, this is called by deck on any card
-	  // added to the deck. this ensures that player enduced rotations of a
-	  // a card can't affect collision detection when the card goes back in the deck
-	  public void resetAngles() {
-	    theta = 0;
-	    omega = 0;
-	  }
-
-	  // update omega and the rotation angle theta of the card
-	  public void updateTheta() {
-	    omega *= (1 - angleDrag);
-	    theta += omega;
-	  }
-
-	  public void incrementOmega(float alpha) {
-	    omega += alpha;
-	  }
-
-	  // return the indices of the symbols on this card
-	  public int[] symbols() {
-	    return symIndices.clone(); // clone returns shallows copies EXCEPT for primitives
-	  }
-	}  
+  public int sketchHeight() { return displayHeight; }  
   
 }

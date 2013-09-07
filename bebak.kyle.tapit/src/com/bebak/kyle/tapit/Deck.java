@@ -3,7 +3,6 @@ package com.bebak.kyle.tapit;
 import java.util.Collections;
 import java.util.Stack;
 
-import com.bebak.kyle.tapit.TapIt.Card;
 
 public class Deck {
 
