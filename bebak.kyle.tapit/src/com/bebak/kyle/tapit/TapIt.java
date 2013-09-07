@@ -468,47 +468,6 @@ public void shuffleArray(PImage[] a)
 
 
 
-public class FadingText {
-  
-  /** A simple class that can instantiate fading text
-   and keep track of its lifetime, like a toast in the android os **/
-
-  private int age;
-  private float x;
-  private float y;
-  private String text;
-  private int textColor;
-
-  private final int LIFE = 75;
-  private float textSize = .09f; // * width 
-
-
-  public FadingText(int textColor, String text, float x, float y) {
-    textSize *= width;
-
-    age = 0; 
-    this.text = text;
-    this.x = x;
-    this.y = y;
-    this.textColor = textColor;
-  }
-
-  public boolean isDead() {
-    return (age >= LIFE);
-  }
-
-  public void displayAndUpdate() {
-    textAlign(CENTER, CENTER); // center text for added or subtracted time toasts
-
-    age++;
-    fill(textColor, 255.0f * sq(sq(1 - age / (float) LIFE)));
-    textSize(textSize);
-    text(text, x, y);
-
-    textAlign(LEFT, BASELINE); // return textAlign to normal
-  }
-}
-
 public class Intro {
   /* This class has a timer which is started when the class is constructed. 
    The class can display itself and check to see if it has been pressed */
@@ -903,11 +862,11 @@ public class Player {
 
       if (TapIt.mode.equals(TapIt.SURVIVOR)) {
         timer.addTime(round(TapIt.extraPerCard * epcMultiplier));
-        ft.add(new FadingText(correctTextColor, "+" + nf(TapIt.extraPerCard * epcMultiplier / (float) 1000, 1, 1), 
+        ft.add(new FadingText(TapIt.this, correctTextColor, "+" + nf(TapIt.extraPerCard * epcMultiplier / (float) 1000, 1, 1), 
         x + random(-r, r), y + random(-r, r)));
       }
       if (TapIt.mode.equals(TapIt.TIME_TRIAL))
-        ft.add(new FadingText(correctTextColor, "+1", x + random(-r, r), y + random(-r, r)));
+        ft.add(new FadingText(TapIt.this, correctTextColor, "+1", x + random(-r, r), y + random(-r, r)));
 
       this.giveCard(deck.removeTop()); // consume a card from the deck
 
@@ -922,7 +881,7 @@ public class Player {
       if (TapIt.mode.equals(TapIt.TIME_TRIAL))
         timer.addTimeCountUp(TapIt.PENALTY);
 
-      ft.add(new FadingText(wrongTextColor, "-" + nf(TapIt.PENALTY / (float) 1000, 1, 1), 
+      ft.add(new FadingText(TapIt.this, wrongTextColor, "-" + nf(TapIt.PENALTY / (float) 1000, 1, 1), 
       x + random(-r, r), y + random(-r, r)));
 
       TapIt.getPlayer().setMediaFile(TapIt.WRONG); // play wrong sound whenever player gets one wrong

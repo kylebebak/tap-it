@@ -1,0 +1,47 @@
+package com.bebak.kyle.tapit;
+
+public class FadingText {
+  
+  /**
+	 * 
+	 */
+	private final TapIt sketch;
+/** A simple class that can instantiate fading text
+   and keep track of its lifetime, like a toast in the android os **/
+
+  private int age;
+  private float x;
+  private float y;
+  private String text;
+  private int textColor;
+
+  private final int LIFE = 75;
+  private float textSize = .09f; // * width 
+
+
+  public FadingText(TapIt tapIt, int textColor, String text, float x, float y) {
+    sketch = tapIt;
+	textSize *= sketch.width;
+
+    age = 0; 
+    this.text = text;
+    this.x = x;
+    this.y = y;
+    this.textColor = textColor;
+  }
+
+  public boolean isDead() {
+    return (age >= LIFE);
+  }
+
+  public void displayAndUpdate() {
+    sketch.textAlign(TapIt.CENTER, TapIt.CENTER); // center text for added or subtracted time toasts
+
+    age++;
+    sketch.fill(textColor, 255.0f * TapIt.sq(TapIt.sq(1 - age / (float) LIFE)));
+    sketch.textSize(textSize);
+    sketch.text(text, x, y);
+
+    sketch.textAlign(TapIt.LEFT, TapIt.BASELINE); // return textAlign to normal
+  }
+}
