@@ -238,7 +238,7 @@ public void initializeGame() {
 
 // go to wait screen before game is initialized
 public void initializeWait() {
-  wait = new Wait(WAIT_TIME);
+  wait = new Wait(this, WAIT_TIME);
 }
 
 
@@ -479,150 +479,7 @@ public void shuffleArray(PImage[] a)
   }
 }
 
-public class Card {
 
-  private int nSyms; // number of symbols per card, less than total nSyms for deck
-  private int[] symIndices; // index of each symbol
-  // there are SPC + (SPC - 1) ^ 2 distinct symbols and distinct cards in the deck
-
-  private float x; // center of card
-  private float y;
-  private float theta = 0; // rotation angle of card
-  private float omega = 0; // angular velocity of card
-
-  private float sr; // symbol radius
-  private float[] sx; // symbol position relative to the center of the card
-  private float[] sy;
-  private float[] sa;
-
-
-  private float r; // radius of circular card
-  private float borderWidth = .055f; // * radius
-  private final int front = color(210, 255, 210);
-  private final int border = color(0, 255, 255);
-  private final float radiusMultiplier = .9995f; 
-  // make sr smaller if symbols don't fit on card
-  private final float angleDrag = .12f;
-  private final float displaySizeMultiplier = .975f;
-
-
-
-  public Card(int nSyms, int[] symIndices, float x, float y) {
-    r = TapIt.cardRadius; // making cardRadius final and static and initializing r here prevents a weird bug
-    r *= width;
-    borderWidth *= r;
-
-    this.nSyms = nSyms;
-    this.symIndices = symIndices;
-
-    this.x = x;
-    this.y = y;
-    sr = 2.0f * r / sqrt(nSyms); // new symbol radius
-    sx = new float[nSyms];
-    sy = new float[nSyms];
-    sa = new float[nSyms];
-    // initialize positions for symbols
-    int c = 0;
-card:
-    while (c < nSyms) {
-      float rad = random(0, r - sr / 2.0f); 
-      // if the divisor of sr is greater than 1, some symbols will be outside card boundary
-      float ang = random(0, 2.0f * PI);
-      float newx = rad * cos(ang);
-      float newy = rad * sin(ang);
-
-      for (int i = 0; i < c; i++) {
-        if ( dist(sx[i], sy[i], newx, newy) < 2.0f * sr) {
-          sr *= radiusMultiplier; 
-          continue card;
-        }
-      } 
-      sx[c] = newx;
-      sy[c] = newy;
-      sa[c] = random(0, 2 * PI);
-      c++;
-    }
-  }
-
-
-
-
-  public void displayFront() {
-    imageMode(CENTER);
-    pushMatrix();
-    translate(x, y);
-    rotate(theta);
-
-    fill(border);
-    ellipse(0, 0, 2 * r, 2 * r);
-    fill(front);
-    noStroke();
-    ellipse(0, 0, 2 * (r - borderWidth), 2 * (r - borderWidth));
-    stroke(0);
-
-    for (int c = 0; c < nSyms; c++) {
-      pushMatrix();
-      translate(sx[c], sy[c]);
-      rotate(sa[c]);
-      image(TapIt.imageAtIndex(symIndices[c]), 0, 0, 
-      displaySizeMultiplier * 2 * sr, displaySizeMultiplier * 2 * sr);
-      popMatrix();
-    }
-
-    popMatrix();
-  }
-
-  public void displayBack() {
-    // not implemented
-  }
-
-
-
-
-  public boolean hasSymbol(int symbolIndex) {
-    for (int s : symIndices) 
-      if (s == symbolIndex) 
-        return true;
-    return false;
-  } 
-
-  // return the index of symbol at the given x and y coordinates 
-  // relative to the center of the card, or -1 if no symbol at these coordinates
-  public int indexAtPosition(float x, float y) {
-    for (int i = 0; i < nSyms; i++)
-      if ( dist(x, y, sx[i], sy[i]) < sr ) return symIndices[i];
-    return -1;
-  }
-
-  // change the location of the card on the canvas
-  public void changePosition(float x, float y) {
-    this.x = x;
-    this.y = y;
-  }
-
-  // reset the rotation angle to zero, this is called by deck on any card
-  // added to the deck. this ensures that player enduced rotations of a
-  // a card can't affect collision detection when the card goes back in the deck
-  public void resetAngles() {
-    theta = 0;
-    omega = 0;
-  }
-
-  // update omega and the rotation angle theta of the card
-  public void updateTheta() {
-    omega *= (1 - angleDrag);
-    theta += omega;
-  }
-
-  public void incrementOmega(float alpha) {
-    omega += alpha;
-  }
-
-  // return the indices of the symbols on this card
-  public int[] symbols() {
-    return symIndices.clone(); // clone returns shallows copies EXCEPT for primitives
-  }
-}
 
 public class Deck {
 
@@ -899,7 +756,7 @@ public class Intro {
     for (int i = 0; i < nImg; i++)
       a[i] = random(0, 2 * PI);
 
-    timer = new Timer(0);
+    timer = new Timer(TapIt.this, 0);
     timer.start();
     titleFinished = false;
   }
@@ -916,7 +773,7 @@ public class Intro {
     /***** Check for whether title screen is finished *****/
     int currentTime = timer.elapsedTime();
     if (currentTime >= titleTime && !titleFinished) {
-      timer = new Timer(0);
+      timer = new Timer(TapIt.this, 0);
       timer.start();
       titleFinished = true;
     }
@@ -1063,7 +920,7 @@ public class Player {
 
     score = 0;
     this.timeLimit = timeLimit;
-    timer = new Timer(timeLimit);
+    timer = new Timer(TapIt.this, timeLimit);
     timer.start();
     displayFixed = false;
   }
@@ -1087,7 +944,7 @@ public class Player {
   }
 
   public void initialize() {
-    timer = new Timer(timeLimit);
+    timer = new Timer(TapIt.this, timeLimit);
     timer.start();
     score = 0;
   }
@@ -1284,7 +1141,7 @@ public class Scores {
     column1x *= width;
     column2x *= width;
 
-    timer = new Timer(0);
+    timer = new Timer(TapIt.this, 0);
   }
 
 
@@ -1873,212 +1730,153 @@ public class Splash {
   }
 }
 
-public class Timer {
-  private int startTime = 0, totalElapsed = 0;
-  private boolean running = false;
-  private int timeLeft = 0;
-
-
-  /****************************
-   * for a countdown timer, constructor sets time left in milliseconds
-   ****************************/
-  public Timer(int timeLeft) {
-    this.timeLeft = timeLeft;
-  }
-
-  /************ for countdown timer *************/
-  public void addTime(int time) {
-    timeLeft += time;
-  }
-
-  public void subtractTime(int time) {
-    timeLeft -= time;
-  }
-
-  public boolean timeIsUp() {
-    return (remainingTime() < 0);
-  }
-
-  /************ for count up timer *************/
-  public void addTimeCountUp(int time) {
-    startTime -= time;
-  }
-
-  public void subtractTimeCountUp(int time) {
-    startTime += time;
-  }
-
-  /****************************
-   * start timer, stop timer, reset timer
-   ****************************/
-  public void start() {
-    if (running) 
-      return;
-
-    startTime = millis();
-    running = true;
-  }
-
-  public void stop() {
-    if (!running)
-      return;
-
-    totalElapsed += (millis() - startTime);
-    running = false;
-  }
-
-  public void reset() {
-    totalElapsed = 0;
-
-    if (running) 
-      startTime = millis();
-    else
-      startTime = 0;
-  }
-
-
-  /****************************
-   * get elapsed time or remaining time in milliseconds, check whether timer is running
-   ****************************/
-  public int elapsedTime() {
-    if (running) 
-      return (millis() - startTime + totalElapsed);
-    else 
-      return (totalElapsed);
-  }
-
-  public int remainingTime() {
-    return timeLeft - elapsedTime();
-  }
-
-  public boolean isRunning() {
-    return running;
-  }
-
-
-  /****************************
-   * get different units of an arbitrary time, input in milliseconds
-   ****************************/
-  public int thousandths(int time) {
-    return (time % 1000);
-  }
-
-  public int second(int time) {
-    return (time / 1000) % 60;
-  }
-
-  public int minute(int time) {
-    return (time / (1000*60)) % 60;
-  }
-
-  public int hour(int time) {
-    return (time / (1000*60*60)) % 24;
-  }
-
-
-
-
-  /****************************
-   * get a string represenation of an arbitrary time, elapsed time, or remaining time.
-   * Accurate from hours down to units of .01 seconds
-   ****************************/
-  public String timeToStringHours(int time) {
-
-    return nf(hour(time), 1) + ":" + nf(minute(time), 2) + ":" + nf(second(time), 2) + 
-      "." + nf(thousandths(time) / 10, 2);
-  }
-
-  public String elapsedTimeToStringHours() {
-    return timeToStringHours(elapsedTime());
-  }
-
-  public String remainingTimeToStringHours() {
-    if (remainingTime() < 0)
-      return "-" + timeToStringHours(-remainingTime());
-
-    return timeToStringHours(remainingTime());
-  }
-
-
-  // Accurate from 1 digit of minutes down to units of .01 seconds
-  public String timeToStringMinutes(int time) {
-
-    return nf(minute(time), 1) + ":" + nf(second(time), 2) + 
-      "." + nf(thousandths(time) / 10, 2);
-  }
-
-  public String elapsedTimeToStringMinutes() {
-    return timeToStringMinutes(elapsedTime());
-  }
-
-  public String remainingTimeToStringMinutes() {
-    if (remainingTime() < 0)
-      return "-" + timeToStringMinutes(-remainingTime());
-
-    return timeToStringMinutes(remainingTime());
-  }
-}
-
-public class Wait {
-  /*
-This class has a time limit which is passed to the constructor, and a timer 
-   which is started when the class is constructed. An instance of a class can
-   be queried to see if its allotted time is up. The class can also display and update
-   itself to show how much of its allotted time remains */
-
-  private int timeLimit;
-  private Timer timer;
-
-  private float barWidth = .55f; // * width
-  private float barHeight = .075f; // * height
-  private float barX = .5f;
-  private float barY = .5f;
-  private float roundedFraction = .5f;
-  private float textSize = .08f; // * height
-
-  private final int TEXTCOLOR = color(255);
-  private int barColor = color(255, 255, 0);
-  private int BG = color(0);
-
-  /******** CONSTRUCTOR, pass timeLimit in milliseconds ********/
-  public Wait (int timeLimit) {
-    barWidth *= width;
-    barHeight *= height;
-    barX *= width;
-    barY *= height;
-    textSize *= height;
-
-    this.timeLimit = timeLimit;
-    timer = new Timer(timeLimit);
-    timer.start();
-  }
-
-
-  // to be called in the draw loop
-  public void displayAndUpdate() {
-    background(BG);
-    rectMode(CORNER);
-
-    // draw waiting text
-    textAlign(CENTER, BASELINE);
-    textSize(textSize);
-    fill(TEXTCOLOR);
-    text("Ready?", barX, barY - barHeight * 1.5f);
-    textAlign(LEFT, BASELINE);
-
-    // calculate bar width based on elapsed time, draw bar
-    float bw = (min(timeLimit, timer.elapsedTime()) / (float) timeLimit) * barWidth; 
-    fill(barColor);
-    rect(barX - barWidth / 2.0f, barY - barHeight / 2.0f, bw, barHeight, barHeight * roundedFraction);
-  }
-
-  // query Wait to see if its allotted time is up
-  public boolean timeIsUp() {
-    return timer.timeIsUp();
-  }
-}
-
-
-  public int sketchWidth() { return displayWidth; }
+public int sketchWidth() { return displayWidth; }
   public int sketchHeight() { return displayHeight; }
+  
+  
+  public class Card {
+
+	  private int nSyms; // number of symbols per card, less than total nSyms for deck
+	  private int[] symIndices; // index of each symbol
+	  // there are SPC + (SPC - 1) ^ 2 distinct symbols and distinct cards in the deck
+
+	  private float x; // center of card
+	  private float y;
+	  private float theta = 0; // rotation angle of card
+	  private float omega = 0; // angular velocity of card
+
+	  private float sr; // symbol radius
+	  private float[] sx; // symbol position relative to the center of the card
+	  private float[] sy;
+	  private float[] sa;
+
+
+	  private float r; // radius of circular card
+	  private float borderWidth = .055f; // * radius
+	  private final int front = color(210, 255, 210);
+	  private final int border = color(0, 255, 255);
+	  private final float radiusMultiplier = .9995f; 
+	  // make sr smaller if symbols don't fit on card
+	  private final float angleDrag = .12f;
+	  private final float displaySizeMultiplier = .975f;
+
+
+
+	  public Card(int nSyms, int[] symIndices, float x, float y) {
+	    r = TapIt.cardRadius; // making cardRadius final and static and initializing r here prevents a weird bug
+	    r *= width;
+	    borderWidth *= r;
+
+	    this.nSyms = nSyms;
+	    this.symIndices = symIndices;
+
+	    this.x = x;
+	    this.y = y;
+	    sr = 2.0f * r / sqrt(nSyms); // new symbol radius
+	    sx = new float[nSyms];
+	    sy = new float[nSyms];
+	    sa = new float[nSyms];
+	    // initialize positions for symbols
+	    int c = 0;
+	card:
+	    while (c < nSyms) {
+	      float rad = random(0, r - sr / 2.0f); 
+	      // if the divisor of sr is greater than 1, some symbols will be outside card boundary
+	      float ang = random(0, 2.0f * PI);
+	      float newx = rad * cos(ang);
+	      float newy = rad * sin(ang);
+
+	      for (int i = 0; i < c; i++) {
+	        if ( dist(sx[i], sy[i], newx, newy) < 2.0f * sr) {
+	          sr *= radiusMultiplier; 
+	          continue card;
+	        }
+	      } 
+	      sx[c] = newx;
+	      sy[c] = newy;
+	      sa[c] = random(0, 2 * PI);
+	      c++;
+	    }
+	  }
+
+
+
+
+	  public void displayFront() {
+	    imageMode(CENTER);
+	    pushMatrix();
+	    translate(x, y);
+	    rotate(theta);
+
+	    fill(border);
+	    ellipse(0, 0, 2 * r, 2 * r);
+	    fill(front);
+	    noStroke();
+	    ellipse(0, 0, 2 * (r - borderWidth), 2 * (r - borderWidth));
+	    stroke(0);
+
+	    for (int c = 0; c < nSyms; c++) {
+	      pushMatrix();
+	      translate(sx[c], sy[c]);
+	      rotate(sa[c]);
+	      image(TapIt.imageAtIndex(symIndices[c]), 0, 0, 
+	      displaySizeMultiplier * 2 * sr, displaySizeMultiplier * 2 * sr);
+	      popMatrix();
+	    }
+
+	    popMatrix();
+	  }
+
+	  public void displayBack() {
+	    // not implemented
+	  }
+
+
+
+
+	  public boolean hasSymbol(int symbolIndex) {
+	    for (int s : symIndices) 
+	      if (s == symbolIndex) 
+	        return true;
+	    return false;
+	  } 
+
+	  // return the index of symbol at the given x and y coordinates 
+	  // relative to the center of the card, or -1 if no symbol at these coordinates
+	  public int indexAtPosition(float x, float y) {
+	    for (int i = 0; i < nSyms; i++)
+	      if ( dist(x, y, sx[i], sy[i]) < sr ) return symIndices[i];
+	    return -1;
+	  }
+
+	  // change the location of the card on the canvas
+	  public void changePosition(float x, float y) {
+	    this.x = x;
+	    this.y = y;
+	  }
+
+	  // reset the rotation angle to zero, this is called by deck on any card
+	  // added to the deck. this ensures that player enduced rotations of a
+	  // a card can't affect collision detection when the card goes back in the deck
+	  public void resetAngles() {
+	    theta = 0;
+	    omega = 0;
+	  }
+
+	  // update omega and the rotation angle theta of the card
+	  public void updateTheta() {
+	    omega *= (1 - angleDrag);
+	    theta += omega;
+	  }
+
+	  public void incrementOmega(float alpha) {
+	    omega += alpha;
+	  }
+
+	  // return the indices of the symbols on this card
+	  public int[] symbols() {
+	    return symIndices.clone(); // clone returns shallows copies EXCEPT for primitives
+	  }
+	}  
+  
 }
