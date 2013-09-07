@@ -19,6 +19,13 @@ private Stack<Card> cards;
   private final int border = Utils.color(0, 255, 255);
   private float cardThickness = .00085f; // * width
   private final int maxNumEllipses = 9;
+  
+  /**
+   * Just constant holding the name of current class for logging purposes.
+   * 
+   * For calling Log.v(LOG, "My log message created by curent class");
+   */
+  private final String LOG = this.getClass().getSimpleName();  
 
   // create an empty deck at the specified location
   public Deck(TapIt tapIt, float x, float y) {

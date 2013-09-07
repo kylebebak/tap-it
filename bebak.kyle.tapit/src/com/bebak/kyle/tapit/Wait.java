@@ -26,6 +26,14 @@ private int timeLimit;
   private int barColor = Utils.color(255, 255, 0);
   private int BG = Utils.color(0);
 
+  /**
+   * Just constant holding the name of current class for logging purposes.
+   * 
+   * For calling Log.v(LOG, "My log message created by curent class");
+   */
+  private final String LOG = this.getClass().getSimpleName();  
+  
+  
   /******** CONSTRUCTOR, pass timeLimit in milliseconds ********/
   public Wait (TapIt tapIt, int timeLimit) {
     this.tapIt = tapIt;

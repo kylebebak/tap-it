@@ -9,7 +9,13 @@ private int startTime = 0, totalElapsed = 0;
   private boolean running = false;
   private int timeLeft = 0;
 
-
+  /**
+   * Just constant holding the name of current class for logging purposes.
+   * 
+   * For calling Log.v(LOG, "My log message created by curent class");
+   */
+  private final String LOG = this.getClass().getSimpleName();  
+  
   /****************************
    * for a countdown timer, constructor sets time left in milliseconds
    ****************************/
