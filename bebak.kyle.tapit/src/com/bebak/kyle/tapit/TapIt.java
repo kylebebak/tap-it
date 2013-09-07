@@ -5,7 +5,6 @@ import processing.data.*;
 import processing.event.*; 
 import processing.opengl.*; 
 
-import java.util.Stack; 
 import java.util.Collections; 
 import apwidgets.*; 
 import android.os.Environment; 
@@ -216,7 +215,7 @@ public void initializeGame() {
   /***************************************
    * Instantiate deck, shuffle cards ArrayList, add cards to deck
    ****************************************/
-  deck = new Deck(dx, dy);
+  deck = new Deck(this, dx, dy);
   Collections.shuffle(cards);
   for (Card c : cards)
     deck.addCard(c);
@@ -315,7 +314,7 @@ public void draw() {
 
       // if in survivor mode, deck must be recycled without reinstantiating player
       if (mode.equals(SURVIVOR)) {
-        deck = new Deck(dx, dy);
+        deck = new Deck(this, dx, dy);
         Collections.shuffle(cards);
         for (Card c : cards)
           if (c != p1.getCard()) // check reference equality, add all cards to deck except player's current card
@@ -481,119 +480,6 @@ public void shuffleArray(PImage[] a)
 
 
 
-public class Deck {
-
-  private Stack<Card> cards;
-  private float x;
-  private float y;
-
-  private float r = .22f; // * width
-  private final int border = color(0, 255, 255);
-  private float cardThickness = .00085f; // * width
-  private final int maxNumEllipses = 9;
-
-  // create an empty deck at the specified location
-  public Deck(float x, float y) {
-    r *= width;
-    cardThickness *= width;
-    
-    cards = new Stack<Card>();
-    this.x = x;
-    this.y = y;
-  }
-
-
-
-  // add a card to the top of the deck
-  public void addCard(Card c) {
-    x += cardThickness;
-    y += cardThickness;
-    c.changePosition(x, y);
-    c.resetAngles();
-    cards.push(c);
-  }
-
-  // remove and return the top card
-  public Card removeTop() {
-    x -= cardThickness;
-    y -= cardThickness;
-    if (cards.size() == 0)
-      return null;
-    return cards.pop();
-  }
-
-  // return the number of cards in the deck
-  public int getSize() {
-    return cards.size();
-  }
-
-  // shuffle the __remaining__ cards in the deck
-  public void shuffleDeck() {
-    Collections.shuffle(cards);
-    Stack<Card> newCards = new Stack<Card>();
-    while (!cards.isEmpty ())
-      newCards.push(this.removeTop());
-    while (!newCards.isEmpty ())
-      this.addCard(newCards.pop());
-  }
-
-  // return the X coord of the top card in the deck
-  public float X() {
-    return x;
-  }
-
-  // return the Y coord of the top card in the deck
-  public float Y() {
-    return y;
-  }
-
-  // change the location of the deck on the canvas
-  public void changePosition(float x, float y) {
-    this.x = x;
-    this.y = y;
-  }
-
-  // return the index of symbol at the given x and y coordinates
-  // for the top card in the deck or -1 if no symbol at these coordinates
-  public int indexAtPosition(float x, float y) {
-    return cards.peek().indexAtPosition(x - this.x, y - this.y);
-  }
-
-
-
-
-  // gives appearance of a stack of cards. THIS CAUSES SLOWDOWN IF TOO MANY ELLIPSES ARE DRAWN
-  public void displayDeck() {
-    fill(border);
-    noSmooth(); // ellipses for cards will render faster
-    
-    int n = min(maxNumEllipses, cards.size());
-    
-    float thickness = cardThickness;
-    if (cards.size() > maxNumEllipses)
-      thickness = cardThickness * (cards.size() / (float) maxNumEllipses);
-    
-    for (int c = 0; c < n - 1; c++) 
-      ellipse(x - (n - c - 1) * thickness, 
-      y - (n - c - 1) * thickness, 2 * r, 2 * r);
-      
-    smooth(); // make drawing smooth again
-  }
-
-  // display the front of the top card by calling the Card method
-  public void displayTopFront() {
-    if (cards.empty()) 
-      return;
-    cards.peek().displayFront();
-  }
-
-  // display the back of the top card by calling the Card method
-  public void displayTopBack() {
-    if (cards.empty())
-      return;
-    cards.peek().displayBack();
-  }
-}
 public class FadingText {
   
   /** A simple class that can instantiate fading text
@@ -877,9 +763,9 @@ public class Player {
     private float r; // radius of circular card
   private float textSize = .038f; // * width
   private final float rotationSpeed = .00001f;
-  private final int textColor = color(255);
-  private final int correctTextColor = color(0, 255, 0);
-  private final int wrongTextColor = color(255, 0, 0);
+  private final int textColor = Utils.color(255);
+  private final int correctTextColor = Utils.color(0, 255, 0);
+  private final int wrongTextColor = Utils.color(255, 0, 0);
 
   private PImage back; // back arrow image
   private float backX = 1.05f; // * r + x
@@ -889,7 +775,7 @@ public class Player {
   private float scoreX = .85f; // * r + x 
   private float scoreY = .9f; // * r + y
 
-  private final int BG = color(50); // background color for board
+  private final int BG = Utils.color(50); // background color for board
 
 
   // constructor
@@ -1085,8 +971,8 @@ public class Scores {
   private final int NSCORES = 20; 
   // this is the number of high scores that can be stored for a given mode, must be even
 
-  private final int BG = color(0);
-  private final int TEXTCOLOR = color(255);
+  private final int BG = Utils.color(0);
+  private final int TEXTCOLOR = Utils.color(255);
   private String mode;
   private int spc;
 
@@ -1111,7 +997,7 @@ public class Scores {
    and inner classes can't have static methods */
 
   // this keeps track of the index of most recently committed score
-  private int mrcColor = color(255, 0, 0);
+  private int mrcColor = Utils.color(255, 0, 0);
   // display most recently committed score for a given difficulty in different color
   private HashMap<String, Integer> mrcIndices;
 
@@ -1487,7 +1373,7 @@ public class Slider<Item> {
     colorbox = 0xff0093CB; 
     coloractive = 0xff00FFFD; 
     colorbutton = 0xffFFFFFF;
-    textcolor = color(255);
+    textcolor = Utils.color(255);
     TEXTSIZE *= width;
 
     tickspacing = dim / (float) (ticks - 1);
@@ -1593,7 +1479,7 @@ public class Splash {
   private Slider mode;
 
   private PImage bgImg; // this background image
-  private final int BG = color(0); // background color in absence of background image
+  private final int BG = Utils.color(0); // background color in absence of background image
 
   private float textSizeStart = .13f; // * height
   private float textSizeScores = .055f; // * height
@@ -1753,8 +1639,8 @@ public int sketchWidth() { return displayWidth; }
 
 	  private float r; // radius of circular card
 	  private float borderWidth = .055f; // * radius
-	  private final int front = color(210, 255, 210);
-	  private final int border = color(0, 255, 255);
+	  private final int front = Utils.color(210, 255, 210);
+	  private final int border = Utils.color(0, 255, 255);
 	  private final float radiusMultiplier = .9995f; 
 	  // make sr smaller if symbols don't fit on card
 	  private final float angleDrag = .12f;
