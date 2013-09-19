@@ -1,5 +1,11 @@
 package com.bebak.kyle.tapit;
 
+/**
+ * DK: What is the purpose of this class? 
+ * 
+ * @author Kyle Bebak
+ *
+ */
 public class Card {
 
   /**
