@@ -203,7 +203,7 @@ public void initializeGame() {
   /***************************************
    * Instantiate deck, shuffle cards ArrayList, add cards to deck
    ****************************************/
-  deck = new Deck(this, dx, dy);
+  deck = new Deck( dx, dy, width);
   Collections.shuffle(cards);
   for (Card c : cards)
     deck.addCard(c);
@@ -302,7 +302,7 @@ public void draw() {
 
       // if in survivor mode, deck must be recycled without reinstantiating player
       if (mode.equals(SURVIVOR)) {
-        deck = new Deck(this, dx, dy);
+        deck = new Deck( dx, dy, width);
         Collections.shuffle(cards);
         for (Card c : cards)
           if (c != p1.getCard()) // check reference equality, add all cards to deck except player's current card

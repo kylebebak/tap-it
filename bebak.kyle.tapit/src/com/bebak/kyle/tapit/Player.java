@@ -134,7 +134,7 @@ public class Player {
   // update card angle and display it, also display score and lives
   public void displayAndUpdate() {
     sketch.background(BG);
-    deck.displayDeck();
+    deck.displayDeck(sketch.g); // this is reference of the active PGraphics from the sketch.
     deck.displayTopFront();
 
     // display back arrow

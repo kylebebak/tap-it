@@ -3,6 +3,8 @@ package com.bebak.kyle.tapit;
 import java.util.Collections;
 import java.util.Stack;
 
+import processing.core.PGraphics;
+
 /**
  * Abstract structure, just a collection(stack) of Cards.
  * AND AS WELL DECK RENDERING METHODS.
@@ -12,7 +14,6 @@ import java.util.Stack;
  */
 public class Deck {
 
-  private final TapIt sketch;
   private Stack<Card> cards;
   
   /**
@@ -59,14 +60,14 @@ public class Deck {
    * @param tapIt reference to parent sketch
    * @param x ?what is this? top left position?
    * @param y
+   * @param width is screen with in pixels passed to the deck so it can initialize itself with proper size.
    */
-  public Deck(TapIt tapIt, float x, float y) {
-    sketch = tapIt;
+  public Deck( float x, float y, float width ) {
     // TODO: First r is "percentage" and then it turns into pixels. Once variable should hold 
     // 		 only one type of value. Should split it into two different variables: one constant for
     //		 percentage and another actual pixel width.
-	r *= sketch.width;
-    cardThickness *= sketch.width;
+	r *= width;
+    cardThickness *= width;
     
     cards = new Stack<Card>();
     this.x = x;
@@ -179,10 +180,18 @@ public class Deck {
    * Gives appearance of a stack of cards. 
    * 
    * THIS CAUSES SLOWDOWN IF TOO MANY ELLIPSES ARE DRAWN
+   * 
+   * In order to decouple this method from sketch, I have introduced parameter
+   * 	PGraphics to this method. Now this method and this class can be reused in
+   * 	any other part of this game or even another game. 
+   * 
+   * @param pg is graphics context (previously initialized with beginDraw()) in which drawing
+   * 		should take place. Be sure to call pushStyle() / popStyle() to ensure that you're not changing
+   * 		drawing style of the graphics for other callers.
    */
-  public void displayDeck() {
-    sketch.fill(border);
-    sketch.noSmooth(); // ellipses for cards will render faster
+  public void displayDeck(PGraphics pg) {
+    pg.fill(border);
+    pg.noSmooth(); // ellipses for cards will render faster
     
     int n = TapIt.min(maxNumEllipses, cards.size());
     
@@ -191,10 +200,10 @@ public class Deck {
       thickness = cardThickness * (cards.size() / (float) maxNumEllipses);
     
     for (int c = 0; c < n - 1; c++) 
-      sketch.ellipse(x - (n - c - 1) * thickness, 
+      pg.ellipse(x - (n - c - 1) * thickness, 
       y - (n - c - 1) * thickness, 2 * r, 2 * r);
       
-    sketch.smooth(); // make drawing smooth again
+    pg.smooth(); // make drawing smooth again
   }
 
   /**
