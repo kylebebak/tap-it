@@ -1,7 +1,9 @@
 package com.bebak.kyle.tapit;
 
 /**
- * DK: What is the purpose of this class? 
+ * DK: What is the purpose of this class?
+ * KB: I'm not sure I follow. Do you think the functionality of this class
+ * should be contained within Deck? I like having the Card class separate from Deck 
  * 
  * @author Kyle Bebak
  *
