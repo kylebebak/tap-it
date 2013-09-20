@@ -1,18 +1,18 @@
 package com.bebak.kyle.tapit;
 
 /**
- * DK: What is the purpose of this class?
- * KB: I'm not sure I follow. Do you think the functionality of this class
- * should be contained within Deck? I like having the Card class separate from Deck 
+ * <P>Data type that stores the image indices, sizes, and positions of a given card.
+ * It can display itself and keeps track of and updates its angle of rotation.
+ * 
+ * <P>It can be queried for which image index is at a given position on the card,
+ * and for whether the card contains the image with a given index
  * 
  * @author Kyle Bebak
  *
  */
 public class Card {
 
-  /**
- * 
- */
+	
 private final TapIt sketch;
 private int nSyms; // number of symbols per card, less than total nSyms for deck
   private int[] symIndices; // index of each symbol
@@ -39,7 +39,13 @@ private int nSyms; // number of symbols per card, less than total nSyms for deck
   private final float displaySizeMultiplier = .975f;
 
 
-
+  /**
+   * Constructor.
+   * 
+   * @param tapIt A reference to the main class that extends PApplet
+   * @param nSyms Number of symbols/images on the card
+   * @param symIndices Indices of the symbols on the card
+   */
   public Card(TapIt tapIt, int nSyms, int[] symIndices, float x, float y) {
     sketch = tapIt;
 	r = TapIt.cardRadius; // making cardRadius final and static and initializing r here prevents a weird bug
@@ -112,7 +118,9 @@ card:
 
 
 
-
+  /**
+   * Does the card contain the symbol with the given index?
+   */
   public boolean hasSymbol(int symbolIndex) {
     for (int s : symIndices) 
       if (s == symbolIndex) 
@@ -120,29 +128,37 @@ card:
     return false;
   } 
 
-  // return the index of symbol at the given x and y coordinates 
-  // relative to the center of the card, or -1 if no symbol at these coordinates
+  /**
+   * return the index of symbol at the given x and y coordinates relative to the center of the card, 
+   * or -1 if no symbol at these coordinates
+   */
   public int indexAtPosition(float x, float y) {
     for (int i = 0; i < nSyms; i++)
       if ( TapIt.dist(x, y, sx[i], sy[i]) < sr ) return symIndices[i];
     return -1;
   }
 
-  // change the location of the card on the canvas
+  /** change the location of the card on the canvas
+   */
   public void changePosition(float x, float y) {
     this.x = x;
     this.y = y;
   }
 
-  // reset the rotation angle to zero, this is called by deck on any card
-  // added to the deck. this ensures that player enduced rotations of a
-  // a card can't affect collision detection when the card goes back in the deck
+  /**
+   *  reset the rotation angle to zero, this is called by deck on any card
+   *  added to the deck. this ensures that player-induced rotations of 
+   *  a card can't affect collision detection when the card goes back in the deck
+   */
   public void resetAngles() {
     theta = 0;
     omega = 0;
   }
 
-  // update omega and the rotation angle theta of the card
+  /**
+   * update omega and the rotation angle theta of the card, drag prevents
+   * cards from rotating indefinitely
+   */
   public void updateTheta() {
     omega *= (1 - angleDrag);
     theta += omega;
@@ -152,7 +168,10 @@ card:
     omega += alpha;
   }
 
-  // return the indices of the symbols on this card
+  /**
+   *  return the indices of the symbols on this card
+   * @return a deep copy of the array of symbol indices, preserves immutability 
+   */
   public int[] symbols() {
     return symIndices.clone(); // clone returns shallows copies EXCEPT for primitives
   }

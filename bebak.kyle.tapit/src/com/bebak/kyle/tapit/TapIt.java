@@ -17,13 +17,9 @@ public class TapIt extends PApplet {
 
 
 
- // for APMediaPlayer
-
-
-
 /****************************************/
 
-static final String DISPLAY_NAME = "Tap  It";
+static final String DISPLAY_NAME = "Tap  It"; // displayed in intro screen
 private static final String APPNAME = "TapIt";
 static String sdPath = null;
 
