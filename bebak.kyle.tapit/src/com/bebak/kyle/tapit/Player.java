@@ -4,18 +4,19 @@ import java.util.ArrayList;
 
 import processing.core.PImage;
 
+
+/*********************************
+ * The Player is responsible for displaying everything in the game, while the main class
+ * is responsible for flow control. Player's Deck is simply a pointer to the deck
+ * instantiated in the main class, and player and deck position and dimensions are specified
+ * in the main class
+*/
 public class Player {
 
   /**
 	 * 
 	 */
 	private final TapIt sketch;
-/*********************************
-   The Player is responsible for displaying everything in the game, while the main class
-   is responsible for flow control. Player's Deck is simply a pointer to the deck
-   instantiated in the main routine, and player and deck position and dimensions are specified
-   in the main class
-   *********************************/
 
   private Deck deck; // simply a pointer to the deck instantiated in the main class
   private Card card;
@@ -49,7 +50,14 @@ public class Player {
   private final int BG = Utils.color(50); // background color for board
 
 
-  // constructor
+  /**
+   * Constructor
+   * 
+   * @param d reference of game deck
+   * @param c reference of card that is in player's possession (the one he can spin)
+   * @param timeLimit only relevant if the game type is survivor. in time trial
+   * the time limit can't run out
+   */
   public Player(TapIt tapIt, float x, float y, Card c, Deck d, int timeLimit) {
 
     sketch = tapIt;
@@ -83,12 +91,13 @@ public class Player {
     displayFixed = false;
   }
 
-
+  /** Give the player this card */
   public void giveCard(Card c) {
     c.changePosition(x, y);
     card = c;
   }
-
+  
+  /** Remove the player's reference to his current card */
   public void removeCard() {
     card = null;
   }
@@ -96,18 +105,20 @@ public class Player {
   public void giveDeck(Deck d) {
     deck = d;
   }
-
+  
+  /** return a pointer to player's card */
   public Card getCard() {
     return card;
   }
-
+  
+  /** restart timer and score */
   public void initialize() {
     timer = new Timer(sketch, timeLimit);
     timer.start();
     score = 0;
   }
 
-  // has the player's time run out?
+  /** has the player's time run out? */
   public boolean timeIsUp() {
     return timer.timeIsUp();
   }
@@ -115,12 +126,13 @@ public class Player {
   public int getScore() {
     return score;
   }
-
+  
+  /** how much of player's time has elapsed? this is the player's score in time trial mode */
   public int timeElapsed() {
     return timer.elapsedTime();
   }
 
-  // for time trial mode, to ensure that committed time and final displayed time are the same 
+  /** for time trial mode, to ensure that committed time and final displayed time are the same */ 
   public void fixAndDisplayTime(int time) {
     fixedTime = time;
     displayFixed = true;
@@ -131,10 +143,11 @@ public class Player {
 
 
 
-  // update card angle and display it, also display score and lives
+  /** update card angle and display it, also display score and lives */
   public void displayAndUpdate() {
     sketch.background(BG);
     deck.displayDeck(sketch.g); // this is reference of the active PGraphics from the sketch.
+    // all PApplet objects have a PGraphics renderer called g
     deck.displayTopFront();
 
     // display back arrow
@@ -166,8 +179,9 @@ public class Player {
 
 
 
-  // if player pushes mouse check to see what symbol in the deck
-  // they have clicked on and update their score appropriately
+  /** if player pushes mouse check to see what symbol in the deck
+   * they have clicked on and update their score appropriately
+   */
   public void checkClick() {
     if (TapIt.dist(sketch.mouseX, sketch.mouseY, x, y) > r) 
       locked = true; // lock out rotation
@@ -216,13 +230,13 @@ public class Player {
 
 
 
-  // player is checking for a click within the back arrow
+  /** player is checking for a click within the back arrow */
   public boolean checkBack() {
     // check if player clicked back button to return to splash screen, calls method form main Tap_It program
     return TapIt.dist(sketch.mouseX, sketch.mouseY, backX, backY) < backDim / 2.0f;
   }
 
-  // this is called in main class whenever mouse is dragged
+  /** this is called in main class whenever mouse is dragged */
   public void checkRotate() {
     if (locked) 
       return;
@@ -230,6 +244,10 @@ public class Player {
     card.incrementOmega(alpha * rotationSpeed);
   }
 
+  /** this is called in main class whenever mouse is released, it allows 
+   * "lockout" to be implemented in the rotation of the card so that a user
+   * can only rotate the card if he starts dragging within the card 
+   */
   public void checkRelease() {
     locked = false;
   }

@@ -17,8 +17,11 @@ public class Deck {
   private Stack<Card> cards;
   
   /**
-   * Contain which ?topleft position of the card?
-   * What is "the Origin" of the deck? Top left corner?
+   * Contains the position of the top card in the deck. When the deck is constructed
+   * is is empty, and cards are added by calling addCard. Each time a card is added,
+   * x and y are incremented by the card thickness so that x and y continue to be at
+   * the center of the top most card. When removeTop is called, x and y are similarly
+   * decremented
    */
   private float x, y;
 
@@ -101,13 +104,12 @@ public class Deck {
    * 		
    */
   public Card removeTop() {
-	// TODO: this seems to be a bug: if there's no cards to remove from top, the x,y 
-	//		 would still be reduced.
-    x -= cardThickness;
-    y -= cardThickness;
     if (cards.size() == 0){
       return null;
     }
+    // fixed the bug you mentioned! x and y only decremented if there are cards in the deck
+    x -= cardThickness; 
+    y -= cardThickness;
     return cards.pop();
   }
 

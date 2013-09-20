@@ -165,7 +165,8 @@ card:
     omega *= (1 - angleDrag);
     theta += omega;
   }
-
+  
+  /** increment card's rotational speed by alpha */
   public void incrementOmega(float alpha) {
     omega += alpha;
   }
