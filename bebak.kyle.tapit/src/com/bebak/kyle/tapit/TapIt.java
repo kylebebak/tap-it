@@ -8,7 +8,9 @@ import processing.core.PFont;
 import processing.core.PImage;
 
 import android.os.Environment;
+
 import android.util.Log;
+
 import apwidgets.APMediaPlayer;
 
 public class TapIt extends PApplet {
@@ -51,12 +53,29 @@ private static final int nImages = 100;
 
 private Deck deck;
 private ArrayList<Card> cards;
-private float dx = .71f; // deck position, * width
+/**
+ * deck position, * width
+ * Deck x coordinate on screen. However
+ * when declare variable contains offset of
+ * the left edge of the screen in percents.
+ * 
+ */
+private float dx = .71f; 
 private float dy = .48f; // * height
 
 private Player p1;
-private float px = .235f; // player position, * width
+
+/**
+ *  player X position, * width
+ */
+private float px = .235f;
+
+/**
+ * player Y position.
+ */
 private float py = .48f; // * height
+
+
 private PFont font; // THIS IS THE ONLY FONT IN THE ENTIRE APPLICATION, IT DOESN'T CHANGE
 static final float cardRadius = .22f; // * width, multiplication done in subclass constructors
 
@@ -86,7 +105,7 @@ static final String CORRECT = "sounds/correct.ogg";
 static final String WRONG = "sounds/wrong.ogg";
 
 
-private final String LOG = this.getClass().getSimpleName();
+private final String LOG = this.getClass().getSimpleName(); // "TapIt"
 
 /******************************************
  * Processing or java on my computer has a bug and requires the absolute path to load data,
@@ -102,7 +121,8 @@ public void setup() {
   
   orientation(LANDSCAPE);
   smooth();
-
+  // dx = 0.71f;
+  // dx = 0.71 * 800px = 500px
   dx *= width; // deck and player positions
   dy *= height;
   px *= width;
@@ -113,8 +133,11 @@ public void setup() {
    * Import and parse symbol images
    ****************************************/
   allImgs = new PImage[nImages];
-  for (int i = 0; i < nImages; i++)
+  for (int i = 0; i < nImages; i++){
     allImgs[i] = loadImage(path + "images/img" + Integer.toString(i) + ".png");
+  }
+
+
 
   font = loadFont(path + "Chalkboard-80.vlw");
   textFont(font); // this sets the text font for the entire application, it is never changed
@@ -135,6 +158,8 @@ public void setup() {
   
   sdPath = sdPath + "/" + APPNAME;
   Log.v(LOG, "Detected sd path: [" +  sdPath + "]");
+  //Log.v("TapIt.java", "Warning, this is a warning");
+  //Log.e("TapIt.java", "Didn't detect sd path");
 
 
   /***************************************s
