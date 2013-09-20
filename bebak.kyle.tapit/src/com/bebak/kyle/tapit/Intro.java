@@ -3,14 +3,13 @@ package com.bebak.kyle.tapit;
 import java.util.ArrayList;
 import java.util.Collections;
 
+/**
+ * This class has a timer which is started when the class is constructed. 
+ * 
+ * The class can display itself and check to see if it has been pressed 
+ */
 public class Intro {
-  /* This class has a timer which is started when the class is constructed. 
-   The class can display itself and check to see if it has been pressed */
 
-
-  /**
-	 * 
-	 */
 	private final TapIt sketch;
 private int nImgTarget = 30;
   private int nMatches = 4;
@@ -49,8 +48,12 @@ private int nImgTarget = 30;
   private boolean titleFinished;
 
 
-  /******** no argument constructor, everything is implemented within the class 
- * @param tapIt TODO********/
+  /**
+   * No argument constructor, everything is implemented within the class.
+   * 
+   * @param tapIt reference to the parent sketch.
+   */ 
+  // TODO: improve comment for constructor
   public Intro(TapIt tapIt) {
 
     sketch = tapIt;
