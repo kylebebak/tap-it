@@ -86,7 +86,9 @@ card:
 
 
 
-
+  /**
+   * Draw the front of the card to the PApplet canvas of the main class 
+   */
   public void displayFront() {
     sketch.imageMode(TapIt.CENTER);
     sketch.pushMatrix();
