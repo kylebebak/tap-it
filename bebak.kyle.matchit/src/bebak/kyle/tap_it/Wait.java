@@ -44,7 +44,7 @@ private int timeLimit;
     textSize *= this.matchIt.height;
 
     this.timeLimit = timeLimit;
-    timer = new Timer(this.matchIt, timeLimit);
+    timer = new Timer( timeLimit);
     timer.start();
   }
 
