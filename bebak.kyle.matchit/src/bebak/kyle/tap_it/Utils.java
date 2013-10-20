@@ -32,4 +32,15 @@ public class Utils {
 		blackIntensityByte = blackIntensityByte & 0xFF;
 		return color(blackIntensityByte, blackIntensityByte, blackIntensityByte);
 	}
+	
+	static String nf(long num, int digits){
+		throw new UnsupportedOperationException("Not implemented ");
+//		return "hellO";
+	}
+
+
+	public static float random(float ddp, float f) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Not impelmented");
+	}
 }
