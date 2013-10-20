@@ -19,7 +19,7 @@ public class MatchIt extends PApplet {
 
 /****************************************/
 
-static final String DISPLAY_NAME = "Match  It"; // displayed in intro screen
+private static final String DISPLAY_NAME = "Match  It"; // displayed in intro screen
 private static final String APPNAME = "MatchIt"; 
 
 /**
@@ -206,8 +206,8 @@ public void setup() {
   commitToScores = false;
   // initialize global scores to default game values, this has to be instantiated for addScore to be called
 
-  intro = new Intro(width, height);
-  // initialize intro with full screen size
+  intro = new Intro(width, height, DISPLAY_NAME);
+  // initialize intro with full screen size and name of the app.
 }
 
 
@@ -409,7 +409,8 @@ public void mousePressed() {
 
   /******** Don't register other mouse events until intro screen is finished *********/
   if (intro != null) {
-    if (intro.checkClick())
+	  noTint();
+    // if (intro.checkClick())  this is kinda dedundant.
       intro = null;
     return;
   }

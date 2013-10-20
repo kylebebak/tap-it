@@ -3,15 +3,21 @@ package bebak.kyle.tap_it;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import processing.core.PApplet;
+import processing.core.PGraphics;
+
 /**
+ * Represents "Displayable" object, which will be rendering intro sequence
+ * shown before the start of the game.
+ * 
  * This class has a timer which is started when the class is constructed. 
  * 
  * The class can display itself and check to see if it has been pressed 
  */
-public class Intro {
+public class Intro extends Displayable 
+{
 
-	private final MatchIt sketch;
-private int nImgTarget = 30;
+  private int nImgTarget = 30;
   private int nMatches = 4;
   private int nImg;
 
@@ -46,24 +52,29 @@ private int nImgTarget = 30;
   private float matchSizeMultiplier = 1.5f;
 
   private boolean titleFinished;
+  
+  /**
+   * Name of the app, displayed during the intro.
+   */
+  private final String mDisplayName;
 
 
   /**
-   * No argument constructor, everything is implemented within the class.
+   * Initializes Intro object with the given width and height of the rectangular area where it will be rendered into.
    * 
-   * @param matchIt reference to the parent sketch.
-   */ 
-  // TODO: improve comment for constructor
-  public Intro(MatchIt matchIt) {
-
-    sketch = matchIt;
-	textSize *= sketch.height;
-    titleX *= sketch.width;
-    titleY *= sketch.height;
+   * @param regionWidth
+   * @param regionHeight
+   * @param displayName name of the app (game) which will be displayed during the intro.
+   */
+  public Intro(int regionWidth, int regionHeight, String displayName) {
+	mDisplayName = displayName;
+	textSize *= regionHeight;
+    titleX *= regionWidth;
+    titleY *= regionHeight;
 
     /********* Compute numbers of images to be shown *********/
-    float w = sketch.width * (1 - borderSize);
-    float h = sketch.height * (1 - borderSize);
+    float w = regionWidth * (1 - borderSize);
+    float h = regionHeight * (1 - borderSize);
 
     int ratio = MatchIt.round(w / h);
     int nVertical = MatchIt.round(MatchIt.sqrt(nImgTarget / (float) ratio));
@@ -77,9 +88,9 @@ private int nImgTarget = 30;
     x = new float[nImg];
     y = new float[nImg];
     for (int i = 0; i < nImg; i++)
-      x[i] = w * (i % nHorizontal + 1) / (nHorizontal + 1) + (borderSize / 2.0f) * sketch.width;
+      x[i] = w * (i % nHorizontal + 1) / (nHorizontal + 1) + (borderSize / 2.0f) * regionWidth;
     for (int j = 0; j < nImg; j++) 
-      y[j] = h * (j / nHorizontal + 1) / (nVertical + 1) + (borderSize / 2.0f) * sketch.height;
+      y[j] = h * (j / nHorizontal + 1) / (nVertical + 1) + (borderSize / 2.0f) * regionHeight;
 
     imgW = (w / ((float) nHorizontal + 1)) * (1 - padding);
     imgH = (h / ((float) nVertical + 1)) * (1 - padding);
@@ -131,26 +142,31 @@ private int nImgTarget = 30;
     a = new float[nImg];
 
     for (int i = 0; i < nImg; i++)
-      a[i] = sketch.random(0, 2 * MatchIt.PI);
+      a[i] = Utils.random(0, 2 * MatchIt.PI);
 
-    timer = new Timer(sketch, 0);
+    timer = new Timer(0);
     timer.start();
     titleFinished = false;
   }
 
 
 
-
-  public void display() {
-
-    sketch.background(0);
-    sketch.imageMode(MatchIt.CENTER);
+  /**
+   * Renders contents of the intro widget into given PGraphics.
+   * 
+   * @param pg Should be PGraphics previously "opened" with beginDraw().
+   */
+  public void display(PGraphics pg) {
+	pg.pushStyle();
+	
+	pg.background(0);
+	pg.imageMode(MatchIt.CENTER);
 
 
     /***** Check for whether title screen is finished *****/
-    int currentTime = timer.elapsedTime();
+    long currentTime = timer.elapsedTime();
     if (currentTime >= titleTime && !titleFinished) {
-      timer = new Timer(sketch, 0);
+      timer = new Timer(0);
       timer.start();
       titleFinished = true;
     }
@@ -160,70 +176,66 @@ private int nImgTarget = 30;
     for (int i = 0; i < nImg; i++) {
 
       updateImg(i); // make images jiggle
-      sketch.pushMatrix();
-      sketch.translate(dx[i] * sketch.width + x[i], dy[i] * sketch.height + y[i]);
-      sketch.rotate(a[i]);
+      pg.pushMatrix();
+      pg.translate(dx[i] * pg.width + x[i], dy[i] * pg.height + y[i]);
+      pg.rotate(a[i]);
 
       // if title isn't finished yet, display images in background but don't highlight matches
       if (!titleFinished)
-        sketch.image(MatchIt.allImgs[imgIndices[i]], 0, 0, imgW, imgH);
+    	  pg.image(MatchIt.allImgs[imgIndices[i]], 0, 0, imgW, imgH);
 
       // highlight matches
       else 
       {
-        int currentMatch = (currentTime / matchTime) % nMatches;
+    	// TODO: DK: I am not sure, whether this conversion from  long to int will break anything or not.
+        int currentMatch = (int) ((currentTime / matchTime) % nMatches);
+        //long currentMatch = (currentTime / matchTime) % nMatches;
         int matchPositionA = matchPositions.get(2 * currentMatch); // indices of current matched pair of symbols
         int matchPositionB = matchPositions.get(2 * currentMatch + 1);
 
         float tintStrength = 255 * MatchIt.abs(MatchIt.sin(1.0f * MatchIt.PI * currentTime / (float) matchTime));
 
         if (matchPositionA == i || matchPositionB == i) {
-          sketch.tint(255 - tintStrength, 255, 255 - tintStrength);
-          sketch.image(MatchIt.imageAtIndex(imgIndices[i]), 0, 0, imgW * matchSizeMultiplier, imgH * matchSizeMultiplier);
+        	pg.tint(255 - tintStrength, 255, 255 - tintStrength);
+        	pg.image(MatchIt.imageAtIndex(imgIndices[i]), 0, 0, imgW * matchSizeMultiplier, imgH * matchSizeMultiplier);
         }
         else {
-          sketch.noTint();
-          sketch.image(MatchIt.imageAtIndex(imgIndices[i]), 0, 0, imgW, imgH);
+        	pg.noTint();
+        	pg.image(MatchIt.imageAtIndex(imgIndices[i]), 0, 0, imgW, imgH);
         }
       }
 
-      sketch.popMatrix();
+      pg.popMatrix();
     }
 
 
     /***** display game title until it disappears *****/
     if (!titleFinished) {
-      sketch.textAlign(MatchIt.CENTER, MatchIt.CENTER);
-      sketch.textSize(textSize);
+    	pg.textAlign(PApplet.CENTER, PApplet.CENTER);
+    	pg.textSize(textSize);
 
       float transparency = currentTime / (float) titleTime;
 
-      sketch.rectMode(MatchIt.CORNER);
-      sketch.fill(0, 255 * MatchIt.sqrt(MatchIt.sqrt(1 - transparency)));
-      sketch.rect(0, 0, sketch.width, sketch.height);
+      pg.rectMode(MatchIt.CORNER);
+      pg.fill(0, 255 * MatchIt.sqrt(MatchIt.sqrt(1 - transparency)));
+      pg.rect(0, 0, pg.width, pg.height);
 
-      sketch.fill(255, 255, 0, 255 * MatchIt.sqrt(1 - transparency));
-      sketch.text(MatchIt.DISPLAY_NAME, titleX, titleY);
-      sketch.textAlign(MatchIt.LEFT, MatchIt.BASELINE);
+      pg.fill(255, 255, 0, 255 * MatchIt.sqrt(1 - transparency));
+      pg.text(mDisplayName, titleX, titleY);
+      pg.textAlign(PApplet.LEFT, PApplet.BASELINE);
     }
-  }
+    pg.popStyle();
+  }// display(PGraphics);
 
 
 
   // helper function for making images jiggle
   private void updateImg(int index) {
-    dx[index] += sketch.random(-ddp, ddp);
-    dx[index] = MatchIt.constrain(dx[index], -dpMax, dpMax);
+    dx[index] += Utils.random(-ddp, ddp);
+    dx[index] = PApplet.constrain(dx[index], -dpMax, dpMax);
 
-    dy[index] += sketch.random(-ddp, ddp);
-    dy[index] = MatchIt.constrain(dy[index], -dpMax, dpMax);
+    dy[index] += Utils.random(-ddp, ddp);
+    dy[index] = PApplet.constrain(dy[index], -dpMax, dpMax);
   }
 
-
-
-  // return true if screen is pressed anywhere, this is simply to dereference Intro object
-  public boolean checkClick() {
-    sketch.noTint(); // remove tint so that it doesn't carry over into game when intro is dereferenced
-    return true;
-  }
 }
