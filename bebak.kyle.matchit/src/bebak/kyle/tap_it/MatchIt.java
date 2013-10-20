@@ -85,6 +85,16 @@ private int spcToCommit;
 private String modeToCommit;
 private Wait wait;
 private final int WAIT_TIME = 1000; // milliseconds of wait time before game starts
+
+/**
+ * This is reference to the "Displayable" Intro class. This class represents intro 
+ * drawn on screen, before playable game screen is loaded.
+ * <p>
+ * This variable also has second duty where it acts as a flag:
+ * <li>when NULL this it is NOT displayed in the main game loop.
+ * <li>when NOT NULL, it also means that intro MUST be displayed inside of main game loop.
+ * </p>
+ */
 private Intro intro; // this is displayed at first and then uninstantiated
 
 
