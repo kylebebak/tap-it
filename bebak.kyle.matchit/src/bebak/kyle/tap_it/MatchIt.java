@@ -21,8 +21,19 @@ public class MatchIt extends PApplet {
 
 static final String DISPLAY_NAME = "Match  It"; // displayed in intro screen
 private static final String APPNAME = "MatchIt"; 
-// name of high scores directory on phone's sd card 
-static String sdPath = null;
+
+/**
+ *  We change way how we think of storing scores. If before we were  
+ * thinking of them as data saved in file on sdcard. Now we introduce 
+ * abstraction layer and we think of scores being fetched 
+ * and stored by {@link ScoreDataManager} class. At this level of abstraction
+ * MatchIt class neither knows, neither wants to know how exactly is storage 
+ * implemented. All it wants to know is that it can load/save scores by calling
+ * appropriate {@link ScoreDataManager} methods.
+ */
+private ScoreDataManager scoreDataManager;
+//// name of high scores directory on phone's sd card 
+//static String sdPath = null;
 
 
 static final int spcInitialIndex = 1;
@@ -30,6 +41,9 @@ static Integer[] spcNumbers = {
   3, 4, 5, 6, 8, 9, 10
 }; 
 
+//
+// ---------------------- mode constant declarations -----------------------------
+// 
 public static String SURVIVOR = "Survivor"; // static constants for modes of play
 public static String TIME_TRIAL = "Time trial";
 static final int modeInitialIndex = 0;
@@ -37,8 +51,14 @@ static String[] modes = {
   TIME_TRIAL, SURVIVOR
 };
 
-
+// -----------------------------------------------------------------
+// --------------------- game status variables ---------------------
+// -----------------------------------------------------------------
 private static int spc; // default spc. symbols per card, 3 - 10 is allowed, with the exception of 7
+
+/**
+ * Current mode: either SURVIVOR or TIME_TRIAL
+ */
 static String mode;
 
 static int nSyms; // number of cards in deck, also number of unique symbols in deck
@@ -78,11 +98,21 @@ static final float cardRadius = .22f; // * width, multiplication done in subclas
 
 
 private Menu menu; // this class manages the flow of the game, read more in its documentation
+
+// these are score-related variables. 
+/**
+ * This is "widget" which displays scores and recieves some interaction from user.
+ */
 private Scores scores;
+/**
+ * When this flag is set, draw() will attempt to save scores.
+ */
 private boolean commitToScores;
-private int scoreToCommit;
+private long scoreToCommit; //? is this used as time
 private int spcToCommit;
 private String modeToCommit;
+
+
 private Wait wait;
 private final int WAIT_TIME = 1000; // milliseconds of wait time before game starts
 
@@ -157,15 +187,9 @@ public void setup() {
 
 
   /***************************************
-   * Create directories and files for scores if they don't exist
+   * Create score manager instance
    ****************************************/
-  sdPath = Environment.getExternalStorageDirectory().getAbsolutePath();
-  
-  
-  sdPath = sdPath + "/" + APPNAME;
-  Log.v(LOG, "Detected sd path: [" +  sdPath + "]");
-  //Log.v("MatchIt.java", "Warning, this is a warning");
-  //Log.e("MatchIt.java", "Didn't detect sd path");
+   scoreDataManager = new ScoreDataManager();
 
 
   /***************************************s
@@ -182,8 +206,8 @@ public void setup() {
   commitToScores = false;
   // initialize global scores to default game values, this has to be instantiated for addScore to be called
 
-  intro = new Intro(this);
-  // initialize intro screen
+  intro = new Intro(width, height);
+  // initialize intro with full screen size
 }
 
 
@@ -283,7 +307,7 @@ public void draw() {
    * What to draw and do if game HAS NOT YET STARTED
    ****************************************/
   if (intro != null) {
-    intro.display();
+    intro.display(this.g);
     return;
   }
 
@@ -324,7 +348,7 @@ public void draw() {
       if (deck.getSize() == 0) {
 
       if (mode.equals(TIME_TRIAL)) {
-        int timeElapsed = p1.timeElapsed();
+        long timeElapsed = p1.timeElapsed();
         p1.fixAndDisplayTime(timeElapsed);
         commitToScores(timeElapsed, spc, mode);
         // ensure same time is committed to scores as is displayed on the screen
@@ -476,7 +500,7 @@ public static APMediaPlayer getPlayer() {
  it simply makes sure that addScore is always called at the beginning
  of draw
  */
-public void commitToScores(int score, int spc, String mode) {
+public void commitToScores(long score, int spc, String mode) {
   commitToScores = true; 
   scoreToCommit = score;
   spcToCommit = spc;

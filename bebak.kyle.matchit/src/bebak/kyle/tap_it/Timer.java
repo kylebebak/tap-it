@@ -1,13 +1,17 @@
 package bebak.kyle.tap_it;
 
+/**
+ * Simple implementation of countdown timer.
+ * 
+ */
 public class Timer {
   /**
 	 * 
 	 */
-	private final MatchIt sketch;
-private int startTime = 0, totalElapsed = 0;
+	//private final MatchIt sketch;
+  private long startTime = 0, totalElapsed = 0;
   private boolean running = false;
-  private int timeLeft = 0;
+  private long timeLeft = 0;
 
   /**
    * Just constant holding the name of current class for logging purposes.
@@ -19,8 +23,12 @@ private int startTime = 0, totalElapsed = 0;
   /****************************
    * for a countdown timer, constructor sets time left in milliseconds
    ****************************/
-  public Timer(MatchIt matchIt, int timeLeft) {
-    sketch = matchIt;
+  /**
+   * Initialize countdown timer.
+   * 
+   * @param timeLeft countdown time left in milliseconds.
+   */
+  public Timer(long timeLeft) {
 	this.timeLeft = timeLeft;
   }
 
@@ -53,7 +61,7 @@ private int startTime = 0, totalElapsed = 0;
     if (running) 
       return;
 
-    startTime = sketch.millis();
+    startTime = System.currentTimeMillis();
     running = true;
   }
 
@@ -61,7 +69,7 @@ private int startTime = 0, totalElapsed = 0;
     if (!running)
       return;
 
-    totalElapsed += (sketch.millis() - startTime);
+    totalElapsed += (System.currentTimeMillis() - startTime);
     running = false;
   }
 
@@ -69,7 +77,7 @@ private int startTime = 0, totalElapsed = 0;
     totalElapsed = 0;
 
     if (running) 
-      startTime = sketch.millis();
+      startTime = System.currentTimeMillis();
     else
       startTime = 0;
   }
@@ -78,14 +86,14 @@ private int startTime = 0, totalElapsed = 0;
   /****************************
    * get elapsed time or remaining time in milliseconds, check whether timer is running
    ****************************/
-  public int elapsedTime() {
+  public long elapsedTime() {
     if (running) 
-      return (sketch.millis() - startTime + totalElapsed);
+      return (System.currentTimeMillis() - startTime + totalElapsed);
     else 
       return (totalElapsed);
   }
 
-  public int remainingTime() {
+  public long remainingTime() {
     return timeLeft - elapsedTime();
   }
 
@@ -93,23 +101,45 @@ private int startTime = 0, totalElapsed = 0;
     return running;
   }
 
-
+  
   /****************************
-   * get different units of an arbitrary time, input in milliseconds
+   * get different components of an arbitrary time, input in milliseconds
+   * Eg. 16:45:01.342
+   *     HH:mm:ss:ttt
    ****************************/
-  public int thousandths(int time) {
+  /**
+   * Returns ttt component of time. (thousand's of the second of the given timestamp) 
+   * @param time
+   * @return
+   */
+  public long  thousandths(long time) {
     return (time % 1000);
   }
 
-  public int second(int time) {
+  /**
+   * Returns ss component of the given time parameter (seconds of the given time)
+   * @param time
+   * @return
+   */
+  public long  second(long  time) {
     return (time / 1000) % 60;
   }
 
-  public int minute(int time) {
+  /**
+   * Returns mm component of the given time parameter (minutes of the given time)
+   * @param time
+   * @return
+   */
+  public long  minute(long  time) {
     return (time / (1000*60)) % 60;
   }
 
-  public int hour(int time) {
+  /**
+   * Returns HH component of the given time parameter (hours of the timestamp)
+   * @param time
+   * @return
+   */
+  public long  hour(long  time) {
     return (time / (1000*60*60)) % 24;
   }
 
@@ -120,10 +150,25 @@ private int startTime = 0, totalElapsed = 0;
    * get a string represenation of an arbitrary time, elapsed time, or remaining time.
    * Accurate from hours down to units of .01 seconds
    ****************************/
-  public String timeToStringHours(int time) {
+  public String timeToStringHours(long time) {
 
-    return MatchIt.nf(hour(time), 1) + ":" + MatchIt.nf(minute(time), 2) + ":" + MatchIt.nf(second(time), 2) + 
-      "." + MatchIt.nf(thousandths(time) / 10, 2);
+	StringBuilder sb = new StringBuilder();
+	sb.append(Utils.nf(hour(time), 1));
+	sb.append(':');
+	sb.append(Utils.nf(minute(time), 2));
+	sb.append(':');
+	sb.append(Utils.nf(second(time), 2));
+	sb.append('.');
+	sb.append(Utils.nf(thousandths(time) / 10, 2));
+	return sb.toString();
+	
+//    return MatchIt.nf(hour(time), 1) 
+//    		+ ":" 
+//    		+ MatchIt.nf(minute(time), 2) 
+//    		+ ":" 
+//    		+ MatchIt.nf(second(time), 2) 
+//    		+ "." 
+//    		+ MatchIt.nf(thousandths(time) / 10, 2);
   }
 
   public String elapsedTimeToStringHours() {
@@ -138,11 +183,27 @@ private int startTime = 0, totalElapsed = 0;
   }
 
 
-  // Accurate from 1 digit of minutes down to units of .01 seconds
-  public String timeToStringMinutes(int time) {
-
-    return MatchIt.nf(minute(time), 1) + ":" + MatchIt.nf(second(time), 2) + 
-      "." + MatchIt.nf(thousandths(time) / 10, 2);
+  /**
+   * Returns string representation of given time (timestamp) in format
+   * <li>59:33.88
+   * <li>mm:ss.dd 
+   * <p>where last one are two last "dd" are decimals of the second.
+   * <p> Accurate from 1 digit of minutes down to units of .01 seconds
+   * @param time
+   * @return
+   */
+  public String timeToStringMinutes(long time) {
+	return String.format("%s:%s.%s", 
+					Utils.nf(minute(time), 1),
+					Utils.nf(second(time), 2),
+					Utils.nf(thousandths(time) / 10, 2)
+					);
+	
+//    return    MatchIt.nf(minute(time), 1) 
+//    		+ ":" 
+//    		+ MatchIt.nf(second(time), 2) 
+//    		+ "." 
+//    		+ MatchIt.nf(thousandths(time) / 10, 2);
   }
 
   public String elapsedTimeToStringMinutes() {

@@ -27,7 +27,7 @@ public class Player {
   private boolean locked; // for rotating player's card
   private Timer timer;
   private int timeLimit;
-  private int fixedTime;
+  private long fixedTime;
   private boolean displayFixed; // for fixing display and ensuring committed score is identical to displayed score
 
   private ArrayList<FadingText> ft; // fading text when player either wins or loses a point
@@ -86,7 +86,7 @@ public class Player {
 
     score = 0;
     this.timeLimit = timeLimit;
-    timer = new Timer(sketch, timeLimit);
+    timer = new Timer(timeLimit);
     timer.start();
     displayFixed = false;
   }
@@ -113,7 +113,7 @@ public class Player {
   
   /** restart timer and score */
   public void initialize() {
-    timer = new Timer(sketch, timeLimit);
+    timer = new Timer(timeLimit);
     timer.start();
     score = 0;
   }
@@ -128,12 +128,12 @@ public class Player {
   }
   
   /** how much of player's time has elapsed? this is the player's score in time trial mode */
-  public int timeElapsed() {
+  public long timeElapsed() {
     return timer.elapsedTime();
   }
 
   /** for time trial mode, to ensure that committed time and final displayed time are the same */ 
-  public void fixAndDisplayTime(int time) {
+  public void fixAndDisplayTime(long time) {
     fixedTime = time;
     displayFixed = true;
     displayAndUpdate();
